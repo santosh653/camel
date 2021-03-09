@@ -29,12 +29,14 @@ import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
 import com.google.api.services.gmail.model.ModifyMessageRequest;
+import org.apache.camel.AsyncCallback;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.ExtendedExchange;
 import org.apache.camel.Processor;
 import org.apache.camel.spi.Synchronization;
+import org.apache.camel.support.EmptyAsyncCallback;
 import org.apache.camel.support.ScheduledBatchPollingConsumer;
 import org.apache.camel.util.CastUtils;
 import org.apache.camel.util.ObjectHelper;
@@ -127,7 +129,7 @@ public class GoogleMailStreamConsumer extends ScheduledBatchPollingConsumer {
                 }
             });
 
-            getAsyncProcessor().process(exchange, doneSync -> LOG.trace("Processing exchange done"));
+            getAsyncProcessor().process(exchange, EmptyAsyncCallback.get());
         }
 
         return total;

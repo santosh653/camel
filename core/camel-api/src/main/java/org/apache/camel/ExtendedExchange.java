@@ -180,4 +180,13 @@ public interface ExtendedExchange extends Exchange {
      */
     void copyInternalProperties(Exchange target);
 
+    /**
+     * Gets the internal properties from this exchange.
+     * <p/>
+     * This method is only intended for Camel internally.
+     *
+     * @return all the internal properties in a Map
+     */
+    Map<String, Object> getInternalProperties();
+
 }

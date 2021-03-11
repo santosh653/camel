@@ -414,7 +414,7 @@ public interface Exchange {
     /**
      * Returns all of the properties associated with the exchange
      *
-     * @return all the headers in a Map
+     * @return all the properties in a Map
      */
     Map<String, Object> getProperties();
 

@@ -820,6 +820,18 @@ class AbstractExchange implements ExtendedExchange {
         }
     }
 
+    @Override
+    public Map<String, Object> getInternalProperties() {
+        Map<String, Object> map = new HashMap<>();
+        for (ExchangePropertyKey key : ExchangePropertyKey.values()) {
+            Object value = internalProperties[key.ordinal()];
+            if (value != null) {
+                map.put(key.getName(), value);
+            }
+        }
+        return map;
+    }
+
     protected String createExchangeId() {
         return context.getUuidGenerator().generateUuid();
     }

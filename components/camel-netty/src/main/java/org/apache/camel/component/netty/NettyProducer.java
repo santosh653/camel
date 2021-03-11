@@ -228,7 +228,8 @@ public class NettyProducer extends DefaultAsyncProducer {
 
         // set the exchange encoding property
         if (getConfiguration().getCharsetName() != null) {
-            exchange.setProperty(ExchangePropertyKey.CHARSET_NAME, IOHelper.normalizeCharset(getConfiguration().getCharsetName()));
+            exchange.setProperty(ExchangePropertyKey.CHARSET_NAME,
+                    IOHelper.normalizeCharset(getConfiguration().getCharsetName()));
         }
 
         if (LOG.isTraceEnabled()) {

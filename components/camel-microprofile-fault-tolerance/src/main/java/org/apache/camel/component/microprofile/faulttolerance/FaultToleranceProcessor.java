@@ -372,7 +372,8 @@ public class FaultToleranceProcessor extends AsyncProcessorSupport
 
             // store the last to endpoint as the failure endpoint
             if (exchange.getProperty(ExchangePropertyKey.FAILURE_ENDPOINT) == null) {
-                exchange.setProperty(ExchangePropertyKey.FAILURE_ENDPOINT, exchange.getProperty(ExchangePropertyKey.TO_ENDPOINT));
+                exchange.setProperty(ExchangePropertyKey.FAILURE_ENDPOINT,
+                        exchange.getProperty(ExchangePropertyKey.TO_ENDPOINT));
             }
             // give the rest of the pipeline another chance
             exchange.setProperty(ExchangePropertyKey.EXCEPTION_HANDLED, true);

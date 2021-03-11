@@ -48,12 +48,12 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.apache.camel.ExchangePropertyKey;
 import org.xml.sax.SAXException;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelContextAware;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.InvalidPayloadException;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.DataFormat;

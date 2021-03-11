@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.camel.ExchangePropertyKey;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -101,7 +102,7 @@ public class CxfCustomizedExceptionTest extends CamelTestSupport {
                         .handled(true)
                         .process(new Processor() {
                             public void process(Exchange exchange) throws Exception {
-                                SoapFault fault = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, SoapFault.class);
+                                SoapFault fault = exchange.getProperty(ExchangePropertyKey.EXCEPTION_CAUGHT, SoapFault.class);
                                 exchange.getMessage().setBody(fault);
                             }
 

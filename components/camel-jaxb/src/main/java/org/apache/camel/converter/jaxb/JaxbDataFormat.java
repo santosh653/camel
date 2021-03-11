@@ -48,6 +48,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.camel.ExchangePropertyKey;
 import org.xml.sax.SAXException;
 
 import org.apache.camel.CamelContext;
@@ -134,12 +135,12 @@ public class JaxbDataFormat extends ServiceSupport
                 marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             }
             // exchange take precedence over encoding option
-            String charset = exchange.getProperty(Exchange.CHARSET_NAME, String.class);
+            String charset = exchange.getProperty(ExchangePropertyKey.CHARSET_NAME, String.class);
             if (charset == null) {
                 charset = encoding;
                 //Propagate the encoding of the exchange
                 if (charset != null) {
-                    exchange.setProperty(Exchange.CHARSET_NAME, charset);
+                    exchange.setProperty(ExchangePropertyKey.CHARSET_NAME, charset);
                 }
             }
             if (charset != null) {

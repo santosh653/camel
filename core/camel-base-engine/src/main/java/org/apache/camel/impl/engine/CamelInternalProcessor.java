@@ -26,6 +26,7 @@ import java.util.concurrent.RejectedExecutionException;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.ExtendedExchange;
 import org.apache.camel.MessageHistory;
@@ -818,11 +819,11 @@ public class CamelInternalProcessor extends DelegateAsyncProcessor implements In
 
             MessageHistory history = factory.newMessageHistory(targetRouteId, definition, System.currentTimeMillis(), exchange);
             if (history != null) {
-                List<MessageHistory> list = exchange.getProperty(Exchange.MESSAGE_HISTORY, List.class);
+                List<MessageHistory> list = exchange.getProperty(ExchangePropertyKey.MESSAGE_HISTORY, List.class);
                 if (list == null) {
                     // use thread-safe list as message history may be accessed concurrently
                     list = new CopyOnWriteArrayList<>();
-                    exchange.setProperty(Exchange.MESSAGE_HISTORY, list);
+                    exchange.setProperty(ExchangePropertyKey.MESSAGE_HISTORY, list);
                 }
                 list.add(history);
             }
@@ -896,7 +897,7 @@ public class CamelInternalProcessor extends DelegateAsyncProcessor implements In
             }
             // cache the body and if we could do that replace it as the new body
             boolean failed = exchange.getException(StreamCacheException.class) != null
-                    || exchange.getProperty(Exchange.EXCEPTION_CAUGHT, StreamCacheException.class) != null;
+                    || exchange.getProperty(ExchangePropertyKey.EXCEPTION_CAUGHT, StreamCacheException.class) != null;
             if (!failed) {
                 try {
                     StreamCache sc = strategy.cache(exchange);

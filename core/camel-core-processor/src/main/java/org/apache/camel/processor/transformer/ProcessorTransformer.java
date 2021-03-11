@@ -69,6 +69,7 @@ public class ProcessorTransformer extends Transformer {
         LOG.debug("Sending to transform processor: {}", processor);
         Exchange transformExchange = new DefaultExchange(exchange);
         transformExchange.setIn(message);
+        // TODO: seems like its creating a copy
         transformExchange.adapt(ExtendedExchange.class).setProperties(exchange.getProperties());
         processor.process(transformExchange);
         Message answer = transformExchange.getMessage();

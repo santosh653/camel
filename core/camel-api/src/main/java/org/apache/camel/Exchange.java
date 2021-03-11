@@ -301,12 +301,41 @@ public interface Exchange {
     Object getProperty(ExchangePropertyKey key);
 
     /**
+     * Returns a property associated with this exchange by the key and specifying the type required
+     *
+     * @param  key  the exchange key
+     * @param  type the type of the property
+     * @return      the value of the given property or <tt>null</tt> if there is no property for the given name or
+     *              <tt>null</tt> if it cannot be converted to the given type
+     */
+    <T> T getProperty(ExchangePropertyKey key, Class<T> type);
+
+    /**
+     * Returns a property associated with this exchange by name and specifying the type required
+     *
+     * @param  key          the exchange key
+     * @param  defaultValue the default value to return if property was absent
+     * @param  type         the type of the property
+     * @return              the value of the given property or <tt>defaultValue</tt> if there is no property for the
+     *                      given name or <tt>null</tt> if it cannot be converted to the given type
+     */
+    <T> T getProperty(ExchangePropertyKey key, Object defaultValue, Class<T> type);
+
+    /**
      * Sets a property on the exchange
      *
      * @param key   the exchange key
      * @param value to associate with the name
      */
     void setProperty(ExchangePropertyKey key, Object value);
+
+    /**
+     * Removes the given property on the exchange
+     *
+     * @param  key the exchange key
+     * @return     the old value of the property
+     */
+    Object removeProperty(ExchangePropertyKey key);
 
     /**
      * Returns a property associated with this exchange by name

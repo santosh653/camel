@@ -17,6 +17,7 @@
 package org.apache.camel.support;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +57,7 @@ class AbstractExchange implements ExtendedExchange {
     final Map<String, Object> properties = new ConcurrentHashMap<>(8);
     // optimize for known exchange properties
     final Object[] knownProperties = new Object[ExchangePropertyKey.values().length];
+    // TODO: knownPropertiesEmpty flag
     long created;
     Message in;
     Message out;
@@ -148,6 +150,18 @@ class AbstractExchange implements ExtendedExchange {
         if (hasProperties()) {
             safeCopyProperties(getProperties(), exchange.getProperties());
         }
+        // copy over known properties
+        System.arraycopy(knownProperties, 0, exchange.knownProperties, 0, knownProperties.length);
+
+        if (getContext().isMessageHistory()) {
+            // safe copy message history using a defensive copy
+            List<MessageHistory> history
+                    = (List<MessageHistory>) exchange.knownProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()];
+            if (history != null) {
+                // use thread-safe list as message history may be accessed concurrently
+                exchange.knownProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()] = new CopyOnWriteArrayList<>(history);
+            }
+        }
 
         return exchange;
     }
@@ -171,14 +185,6 @@ class AbstractExchange implements ExtendedExchange {
     @SuppressWarnings("unchecked")
     private void safeCopyProperties(Map<String, Object> source, Map<String, Object> target) {
         target.putAll(source);
-        if (getContext().isMessageHistory()) {
-            // safe copy message history using a defensive copy
-            List<MessageHistory> history = (List<MessageHistory>) target.remove(Exchange.MESSAGE_HISTORY);
-            if (history != null) {
-                // use thread-safe list as message history may be accessed concurrently
-                target.put(Exchange.MESSAGE_HISTORY, new CopyOnWriteArrayList<>(history));
-            }
-        }
     }
 
     @Override
@@ -192,13 +198,71 @@ class AbstractExchange implements ExtendedExchange {
     }
 
     @Override
+    public <T> T getProperty(ExchangePropertyKey key, Class<T> type) {
+        Object value = getProperty(key);
+        if (value == null) {
+            // lets avoid NullPointerException when converting to boolean for null values
+            if (boolean.class == type) {
+                return (T) Boolean.FALSE;
+            }
+            return null;
+        }
+
+        // eager same instance type test to avoid the overhead of invoking the type converter
+        // if already same type
+        if (type.isInstance(value)) {
+            return (T) value;
+        }
+
+        return ExchangeHelper.convertToType(this, type, value);
+    }
+
+    @Override
+    public <T> T getProperty(ExchangePropertyKey key, Object defaultValue, Class<T> type) {
+        Object value = getProperty(key);
+        if (value == null) {
+            value = defaultValue;
+        }
+        if (value == null) {
+            // lets avoid NullPointerException when converting to boolean for null values
+            if (boolean.class == type) {
+                return (T) Boolean.FALSE;
+            }
+            return null;
+        }
+
+        // eager same instance type test to avoid the overhead of invoking the type converter
+        // if already same type
+        if (type.isInstance(value)) {
+            return (T) value;
+        }
+
+        return ExchangeHelper.convertToType(this, type, value);
+    }
+
+    @Override
     public void setProperty(ExchangePropertyKey key, Object value) {
         knownProperties[key.ordinal()] = value;
     }
 
+    public Object removeProperty(ExchangePropertyKey key) {
+        Object old = knownProperties[key.ordinal()];
+        knownProperties[key.ordinal()] = null;
+        return old;
+    }
+
     @Override
     public Object getProperty(String name) {
-        return properties.get(name);
+        Object answer = null;
+        ExchangePropertyKey key = ExchangePropertyKey.asExchangePropertyKey(name);
+        if (key != null) {
+            answer = knownProperties[key.ordinal()];
+            // if the property is not in known then fallback to lookup in the map
+        }
+        if (answer == null) {
+            answer = properties.get(name);
+        }
+        return answer;
     }
 
     @Override
@@ -254,14 +318,15 @@ class AbstractExchange implements ExtendedExchange {
 
     @Override
     public void setProperty(String name, Object value) {
-        if (value != null) {
+        ExchangePropertyKey key = ExchangePropertyKey.asExchangePropertyKey(name);
+        if (key != null) {
+            setProperty(key, value);
+        } else if (value != null) {
             // avoid the NullPointException
             properties.put(name, value);
         } else {
             // if the value is null, we just remove the key from the map
-            if (name != null) {
-                properties.remove(name);
-            }
+            properties.remove(name);
         }
     }
 
@@ -273,6 +338,10 @@ class AbstractExchange implements ExtendedExchange {
 
     @Override
     public Object removeProperty(String name) {
+        ExchangePropertyKey key = ExchangePropertyKey.asExchangePropertyKey(name);
+        if (key != null) {
+            return removeProperty(key);
+        }
         if (!hasProperties()) {
             return null;
         }
@@ -286,19 +355,27 @@ class AbstractExchange implements ExtendedExchange {
 
     @Override
     public boolean removeProperties(String pattern, String... excludePatterns) {
-        if (!hasProperties()) {
-            return false;
-        }
-
         // special optimized
         if (excludePatterns == null && "*".equals(pattern)) {
             properties.clear();
+            Arrays.fill(knownProperties, null);
             return true;
+        }
+
+        boolean matches = false;
+        for (ExchangePropertyKey epk : ExchangePropertyKey.values()) {
+            String key = epk.getName();
+            if (PatternHelper.matchPattern(key, pattern)) {
+                if (excludePatterns != null && PatternHelper.isExcludePatternMatch(key, excludePatterns)) {
+                    continue;
+                }
+                matches = true;
+                knownProperties[epk.ordinal()] = null;
+            }
         }
 
         // store keys to be removed as we cannot loop and remove at the same time in implementations such as HashMap
         Set<String> toBeRemoved = null;
-        boolean matches = false;
         for (String key : properties.keySet()) {
             if (PatternHelper.matchPattern(key, pattern)) {
                 if (excludePatterns != null && PatternHelper.isExcludePatternMatch(key, excludePatterns)) {
@@ -312,7 +389,7 @@ class AbstractExchange implements ExtendedExchange {
             }
         }
 
-        if (matches) {
+        if (matches && toBeRemoved != null) {
             if (toBeRemoved.size() == properties.size()) {
                 // special optimization when all should be removed
                 properties.clear();
@@ -729,6 +806,17 @@ class AbstractExchange implements ExtendedExchange {
             MessageSupport messageSupport = (MessageSupport) message;
             messageSupport.setExchange(this);
             messageSupport.setCamelContext(getContext());
+        }
+    }
+
+    @Override
+    public void copyKnownProperties(Exchange target) {
+        AbstractExchange ae = (AbstractExchange) target;
+        for (int i = 0; i < knownProperties.length; i++) {
+            Object value = knownProperties[i];
+            if (value != null) {
+                ae.knownProperties[i] = value;
+            }
         }
     }
 

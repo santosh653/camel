@@ -60,6 +60,7 @@ public class ProcessorValidator extends Validator {
         // create a new exchange to use during validation to avoid side-effects on original exchange
         Exchange validateExchange = new DefaultExchange(exchange);
         validateExchange.setIn(message);
+        // TODO: seems like its creating a copy
         validateExchange.adapt(ExtendedExchange.class).setProperties(exchange.getProperties());
         try {
             processor.process(validateExchange);

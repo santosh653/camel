@@ -689,15 +689,14 @@ public class MockEndpoint extends DefaultEndpoint implements BrowsableEndpoint, 
                     Object expectedValue = entry.getValue();
 
                     // we accept that an expectedValue of null also means that the property may be absent
+                    Object actualValue = null;
                     if (expectedValue != null) {
-                        assertTrue("Exchange " + i + " has no properties", !exchange.getProperties().isEmpty());
-                        boolean hasKey = exchange.getProperties().containsKey(key);
+                        actualValue = exchange.getProperty(key);
+                        boolean hasKey = actualValue != null;
                         assertTrue("No property with name " + key + " found for message: " + i, hasKey);
                     }
 
-                    Object actualValue = exchange.getProperty(key);
                     actualValue = extractActualValue(exchange, actualValue, expectedValue);
-
                     assertEquals("Property with name " + key + " for message: " + i, expectedValue, actualValue);
                 }
             }

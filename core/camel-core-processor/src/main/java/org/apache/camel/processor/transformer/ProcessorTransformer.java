@@ -18,11 +18,12 @@ package org.apache.camel.processor.transformer;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExtendedExchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.spi.DataType;
 import org.apache.camel.spi.Transformer;
-import org.apache.camel.support.ExchangeHelper;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.support.service.ServiceHelper;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
@@ -66,10 +67,12 @@ public class ProcessorTransformer extends Transformer {
         }
 
         LOG.debug("Sending to transform processor: {}", processor);
-        // create a new exchange to use during transform to avoid side-effects on original exchange
-        Exchange copy = ExchangeHelper.createCorrelatedCopy(exchange, false, true);
-        processor.process(copy);
-        Message answer = copy.getMessage();
+        // must create a copy in this way
+        Exchange transformExchange = new DefaultExchange(exchange);
+        transformExchange.setIn(message);
+        transformExchange.adapt(ExtendedExchange.class).setProperties(exchange.getProperties());
+        processor.process(transformExchange);
+        Message answer = transformExchange.getMessage();
 
         if (to.isJavaType()) {
             Object answerBody = answer.getBody();

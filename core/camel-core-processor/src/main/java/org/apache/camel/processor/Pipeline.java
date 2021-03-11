@@ -106,6 +106,7 @@ public class Pipeline extends AsyncProcessorSupport implements Navigate<Processo
 
                 processor.process(exchange, this);
             } else {
+                // TODO: optimize we can likely avoid copy results due to same exchange instance
                 ExchangeHelper.copyResults(exchange, exchange);
 
                 // logging nextExchange as it contains the exchange that might have altered the payload and since

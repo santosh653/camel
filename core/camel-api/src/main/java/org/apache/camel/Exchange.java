@@ -293,6 +293,22 @@ public interface Exchange {
     void setPattern(ExchangePattern pattern);
 
     /**
+     * Returns a property associated with this exchange by the key
+     *
+     * @param  key the exchange key
+     * @return     the value of the given property or <tt>null</tt> if there is no property for the given key
+     */
+    Object getProperty(ExchangePropertyKey key);
+
+    /**
+     * Sets a property on the exchange
+     *
+     * @param key   the exchange key
+     * @param value to associate with the name
+     */
+    void setProperty(ExchangePropertyKey key, Object value);
+
+    /**
      * Returns a property associated with this exchange by name
      *
      * @param  name the name of the property

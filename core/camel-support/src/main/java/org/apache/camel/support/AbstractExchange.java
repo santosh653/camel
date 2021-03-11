@@ -30,6 +30,7 @@ import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.ExtendedExchange;
 import org.apache.camel.Message;
@@ -53,6 +54,8 @@ class AbstractExchange implements ExtendedExchange {
     final CamelContext context;
     // optimize to create properties always and with a reasonable small size
     final Map<String, Object> properties = new ConcurrentHashMap<>(8);
+    // optimize for known exchange properties
+    final Object[] knownProperties = new Object[ExchangePropertyKey.values().length];
     long created;
     Message in;
     Message out;
@@ -181,6 +184,16 @@ class AbstractExchange implements ExtendedExchange {
     @Override
     public CamelContext getContext() {
         return context;
+    }
+
+    @Override
+    public Object getProperty(ExchangePropertyKey key) {
+        return knownProperties[key.ordinal()];
+    }
+
+    @Override
+    public void setProperty(ExchangePropertyKey key, Object value) {
+        knownProperties[key.ordinal()] = value;
     }
 
     @Override

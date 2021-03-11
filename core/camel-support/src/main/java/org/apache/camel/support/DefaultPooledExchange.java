@@ -16,6 +16,8 @@
  */
 package org.apache.camel.support;
 
+import java.util.Arrays;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -76,6 +78,7 @@ public final class DefaultPooledExchange extends AbstractExchange implements Poo
         if (created > 0 && (forced || autoRelease)) {
             this.created = 0; // by setting to 0 we also flag that this exchange is done and needs to be reset to use again
             this.properties.clear();
+            Arrays.fill(this.knownProperties, null);
             this.exchangeId = null;
             if (in != null && in.getClass() == originalInClassType) {
                 // okay we can reuse in

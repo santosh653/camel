@@ -65,14 +65,6 @@ import org.apache.camel.spi.annotations.ConstantProvider;
 @ConstantProvider("org.apache.camel.ExchangeConstantProvider")
 public interface Exchange {
 
-    // TODO: camel-core-processor using exchange properties for meta-data
-    // gather list of different keys they use, and then make an optimized
-    // exchange property map for this by getting key via some ordinal value (0, 1, 2, 3, etc)
-    // that is an index to an array that holds the value
-    // and then that array is reset in reset method
-    // and the getProperty is then aware of these special keys to lookup in array instead of map
-    // and then do profiling again JDK mission control, likely 1.4mb reduced down to very little
-
     String AUTHENTICATION = "CamelAuthentication";
     String AUTHENTICATION_FAILURE_POLICY_ID = "CamelAuthenticationFailurePolicyId";
     @Deprecated

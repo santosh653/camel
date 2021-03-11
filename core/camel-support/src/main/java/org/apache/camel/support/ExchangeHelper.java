@@ -851,6 +851,13 @@ public final class ExchangeHelper {
             answer.setProperties(safeCopyProperties(exchange.getProperties()));
         }
         exchange.adapt(ExtendedExchange.class).copyInternalProperties(answer);
+        // safe copy message history using a defensive copy
+        List<MessageHistory> history
+                = (List<MessageHistory>) exchange.getProperty(ExchangePropertyKey.MESSAGE_HISTORY);
+        if (history != null) {
+            // use thread-safe list as message history may be accessed concurrently
+            answer.setProperty(ExchangePropertyKey.MESSAGE_HISTORY, new CopyOnWriteArrayList<>(history));
+        }
 
         if (handover) {
             // Need to hand over the completion for async invocation
@@ -927,18 +934,7 @@ public final class ExchangeHelper {
         if (properties == null) {
             return null;
         }
-
-        Map<String, Object> answer = new ConcurrentHashMap<>(properties);
-
-        // safe copy message history using a defensive copy
-        // TODO: message history
-        List<MessageHistory> history = (List<MessageHistory>) answer.remove(Exchange.MESSAGE_HISTORY);
-        if (history != null) {
-            // use thread-safe list as message history may be accessed concurrently
-            answer.put(Exchange.MESSAGE_HISTORY, new CopyOnWriteArrayList<>(history));
-        }
-
-        return answer;
+        return new ConcurrentHashMap<>(properties);
     }
 
     /**

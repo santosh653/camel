@@ -406,7 +406,7 @@ public final class ExchangeHelper {
         if (source.hasProperties()) {
             result.getProperties().putAll(source.getProperties());
         }
-        source.adapt(ExtendedExchange.class).copyKnownProperties(result);
+        source.adapt(ExtendedExchange.class).copyInternalProperties(result);
 
         // copy over state
         result.setRouteStop(source.isRouteStop());
@@ -850,7 +850,7 @@ public final class ExchangeHelper {
         if (exchange.hasProperties()) {
             answer.setProperties(safeCopyProperties(exchange.getProperties()));
         }
-        exchange.adapt(ExtendedExchange.class).copyKnownProperties(answer);
+        exchange.adapt(ExtendedExchange.class).copyInternalProperties(answer);
 
         if (handover) {
             // Need to hand over the completion for async invocation

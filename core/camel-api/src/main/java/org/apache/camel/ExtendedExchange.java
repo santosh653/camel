@@ -172,10 +172,12 @@ public interface ExtendedExchange extends Exchange {
     void setErrorHandlerHandled(Boolean errorHandlerHandled);
 
     /**
-     * To copy the known properties from this to the target
+     * To copy the internal properties from this exchange to the target exchange
+     * <p/>
+     * This method is only intended for Camel internally.
      *
      * @param target the target exchange
      */
-    void copyKnownProperties(Exchange target);
+    void copyInternalProperties(Exchange target);
 
 }

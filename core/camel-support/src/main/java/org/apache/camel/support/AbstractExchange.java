@@ -55,9 +55,8 @@ class AbstractExchange implements ExtendedExchange {
     final CamelContext context;
     // optimize to create properties always and with a reasonable small size
     final Map<String, Object> properties = new ConcurrentHashMap<>(8);
-    // optimize for known exchange properties
-    final Object[] knownProperties = new Object[ExchangePropertyKey.values().length];
-    // TODO: knownPropertiesEmpty flag
+    // optimize for internal exchange properties (not intended for end users)
+    final Object[] internalProperties = new Object[ExchangePropertyKey.values().length];
     long created;
     Message in;
     Message out;
@@ -150,16 +149,16 @@ class AbstractExchange implements ExtendedExchange {
         if (hasProperties()) {
             safeCopyProperties(getProperties(), exchange.getProperties());
         }
-        // copy over known properties
-        System.arraycopy(knownProperties, 0, exchange.knownProperties, 0, knownProperties.length);
+        // copy over internal properties
+        System.arraycopy(internalProperties, 0, exchange.internalProperties, 0, internalProperties.length);
 
         if (getContext().isMessageHistory()) {
             // safe copy message history using a defensive copy
             List<MessageHistory> history
-                    = (List<MessageHistory>) exchange.knownProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()];
+                    = (List<MessageHistory>) exchange.internalProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()];
             if (history != null) {
                 // use thread-safe list as message history may be accessed concurrently
-                exchange.knownProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()] = new CopyOnWriteArrayList<>(history);
+                exchange.internalProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()] = new CopyOnWriteArrayList<>(history);
             }
         }
 
@@ -194,7 +193,7 @@ class AbstractExchange implements ExtendedExchange {
 
     @Override
     public Object getProperty(ExchangePropertyKey key) {
-        return knownProperties[key.ordinal()];
+        return internalProperties[key.ordinal()];
     }
 
     @Override
@@ -242,12 +241,12 @@ class AbstractExchange implements ExtendedExchange {
 
     @Override
     public void setProperty(ExchangePropertyKey key, Object value) {
-        knownProperties[key.ordinal()] = value;
+        internalProperties[key.ordinal()] = value;
     }
 
     public Object removeProperty(ExchangePropertyKey key) {
-        Object old = knownProperties[key.ordinal()];
-        knownProperties[key.ordinal()] = null;
+        Object old = internalProperties[key.ordinal()];
+        internalProperties[key.ordinal()] = null;
         return old;
     }
 
@@ -256,8 +255,8 @@ class AbstractExchange implements ExtendedExchange {
         Object answer = null;
         ExchangePropertyKey key = ExchangePropertyKey.asExchangePropertyKey(name);
         if (key != null) {
-            answer = knownProperties[key.ordinal()];
-            // if the property is not in known then fallback to lookup in the map
+            answer = internalProperties[key.ordinal()];
+            // if the property is not an internal then fallback to lookup in the properties map
         }
         if (answer == null) {
             answer = properties.get(name);
@@ -358,7 +357,7 @@ class AbstractExchange implements ExtendedExchange {
         // special optimized
         if (excludePatterns == null && "*".equals(pattern)) {
             properties.clear();
-            Arrays.fill(knownProperties, null);
+            Arrays.fill(internalProperties, null);
             return true;
         }
 
@@ -370,7 +369,7 @@ class AbstractExchange implements ExtendedExchange {
                     continue;
                 }
                 matches = true;
-                knownProperties[epk.ordinal()] = null;
+                internalProperties[epk.ordinal()] = null;
             }
         }
 
@@ -810,12 +809,12 @@ class AbstractExchange implements ExtendedExchange {
     }
 
     @Override
-    public void copyKnownProperties(Exchange target) {
+    public void copyInternalProperties(Exchange target) {
         AbstractExchange ae = (AbstractExchange) target;
-        for (int i = 0; i < knownProperties.length; i++) {
-            Object value = knownProperties[i];
+        for (int i = 0; i < internalProperties.length; i++) {
+            Object value = internalProperties[i];
             if (value != null) {
-                ae.knownProperties[i] = value;
+                ae.internalProperties[i] = value;
             }
         }
     }

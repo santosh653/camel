@@ -129,8 +129,6 @@ public class MyBatisConsumer extends ScheduledBatchPollingConsumer {
             // update pending number of exchanges
             pendingExchanges = total - index - 1;
 
-            // process the current exchange
-            LOG.debug("Processing exchange: {} with properties: {}", exchange, exchange.getProperties());
             Exception cause = null;
             try {
                 getProcessor().process(exchange);

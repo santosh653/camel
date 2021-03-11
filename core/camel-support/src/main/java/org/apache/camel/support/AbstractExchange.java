@@ -158,7 +158,8 @@ class AbstractExchange implements ExtendedExchange {
                     = (List<MessageHistory>) exchange.internalProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()];
             if (history != null) {
                 // use thread-safe list as message history may be accessed concurrently
-                exchange.internalProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()] = new CopyOnWriteArrayList<>(history);
+                exchange.internalProperties[ExchangePropertyKey.MESSAGE_HISTORY.ordinal()]
+                        = new CopyOnWriteArrayList<>(history);
             }
         }
 

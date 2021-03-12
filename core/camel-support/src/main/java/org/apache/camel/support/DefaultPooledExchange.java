@@ -16,8 +16,6 @@
  */
 package org.apache.camel.support;
 
-import java.util.Arrays;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;

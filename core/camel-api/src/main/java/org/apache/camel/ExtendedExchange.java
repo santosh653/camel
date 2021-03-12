@@ -181,8 +181,8 @@ public interface ExtendedExchange extends Exchange {
     void copyInternalProperties(Exchange target);
 
     /**
-     * Gets the internal properties from this exchange.
-     * The known set of internal keys is defined in {@link ExchangePropertyKey}.
+     * Gets the internal properties from this exchange. The known set of internal keys is defined in
+     * {@link ExchangePropertyKey}.
      * <p/>
      * This method is only intended for Camel internally.
      *

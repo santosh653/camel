@@ -21,12 +21,6 @@ package org.apache.camel;
  */
 public enum ExchangePropertyKey {
 
-    // TODO: sort by most commonly used (not A..Z)
-    // so we can say 0..10 are frequently used
-    // and 11..end are possible used
-    // then we can optimize and have dirty flags for possible used
-    // and if not dirty then no need to go so far in the array
-
     AGGREGATED_COMPLETED_BY(Exchange.AGGREGATED_COMPLETED_BY),
     AGGREGATED_CORRELATION_KEY(Exchange.AGGREGATED_CORRELATION_KEY),
     AGGREGATED_SIZE(Exchange.AGGREGATED_SIZE),

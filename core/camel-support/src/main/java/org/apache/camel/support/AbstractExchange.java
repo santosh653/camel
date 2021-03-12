@@ -52,11 +52,16 @@ import org.apache.camel.util.ObjectHelper;
  */
 class AbstractExchange implements ExtendedExchange {
 
+    // number of elements in array
+    static final int INTERNAL_LENGTH = ExchangePropertyKey.values().length;
+    // empty array for reset
+    static final Object[] EMPTY_INTERNAL_PROPERTIES = new Object[INTERNAL_LENGTH];
+
     final CamelContext context;
     // optimize to create properties always and with a reasonable small size
     final Map<String, Object> properties = new ConcurrentHashMap<>(8);
     // optimize for internal exchange properties (not intended for end users)
-    final Object[] internalProperties = new Object[ExchangePropertyKey.values().length];
+    final Object[] internalProperties = new Object[INTERNAL_LENGTH];
     long created;
     Message in;
     Message out;
@@ -358,7 +363,8 @@ class AbstractExchange implements ExtendedExchange {
         // special optimized
         if (excludePatterns == null && "*".equals(pattern)) {
             properties.clear();
-            Arrays.fill(internalProperties, null);
+            // reset array by copying over from empty which is a very fast JVM optimized operation
+            System.arraycopy(EMPTY_INTERNAL_PROPERTIES, 0, this.internalProperties, 0, INTERNAL_LENGTH);
             return true;
         }
 
@@ -406,6 +412,16 @@ class AbstractExchange implements ExtendedExchange {
     @Override
     public Map<String, Object> getProperties() {
         return properties;
+    }
+
+    @Override
+    public Map<String, Object> getAllProperties() {
+        // include also internal properties (creates a new map)
+        Map<String, Object> map = getInternalProperties();
+        if (!properties.isEmpty()) {
+            map.putAll(properties);
+        }
+        return map;
     }
 
     @Override

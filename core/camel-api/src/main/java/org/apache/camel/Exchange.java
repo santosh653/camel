@@ -404,11 +404,20 @@ public interface Exchange {
     boolean removeProperties(String pattern, String... excludePatterns);
 
     /**
-     * Returns all of the properties associated with the exchange
+     * Returns the properties associated with the exchange
      *
-     * @return all the properties in a Map
+     * @return the properties in a Map
+     * @see #getAllProperties()
      */
     Map<String, Object> getProperties();
+
+    /**
+     * Returns all (both internal and custom) of the properties associated with the exchange
+     *
+     * @return all (both internal and custom) the properties in a Map
+     * @see #getProperties()
+     */
+    Map<String, Object> getAllProperties();
 
     /**
      * Returns whether any properties has been set

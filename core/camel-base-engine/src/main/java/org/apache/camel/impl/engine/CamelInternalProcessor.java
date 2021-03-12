@@ -107,6 +107,7 @@ public class CamelInternalProcessor extends DelegateAsyncProcessor implements In
     private final ShutdownStrategy shutdownStrategy;
     private final List<CamelInternalProcessorAdvice<?>> advices = new ArrayList<>();
     private byte statefulAdvices;
+    private Object[] EMPTY_STATEFUL_STATES;
     private PooledObjectFactory<CamelInternalTask> taskFactory;
 
     public CamelInternalProcessor(CamelContext camelContext) {
@@ -132,6 +133,9 @@ public class CamelInternalProcessor extends DelegateAsyncProcessor implements In
             int capacity = camelContext.adapt(ExtendedCamelContext.class).getExchangeFactory().getCapacity();
             taskFactory.setCapacity(capacity);
             LOG.trace("Using TaskFactory: {}", taskFactory);
+
+            // create empty array we can use for reset
+            EMPTY_STATEFUL_STATES = new Object[statefulAdvices];
         }
 
         ServiceHelper.buildService(taskFactory, processor);
@@ -223,7 +227,8 @@ public class CamelInternalProcessor extends DelegateAsyncProcessor implements In
 
         @Override
         public void reset() {
-            Arrays.fill(states, null);
+            // reset array by copying over from empty which is a very fast JVM optimized operation
+            System.arraycopy(EMPTY_STATEFUL_STATES, 0, states, 0, statefulAdvices);
             this.exchange = null;
             this.originalCallback = null;
         }

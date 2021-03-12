@@ -23,6 +23,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.ExchangeTestSupport;
+import org.apache.camel.ExtendedExchange;
 import org.apache.camel.InvalidPayloadException;
 import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
@@ -231,7 +232,7 @@ public class DefaultExchangeTest extends ExchangeTestSupport {
     }
 
     @Test
-    public void testRemoveKnownProperties() throws Exception {
+    public void testRemoveInternalProperties() throws Exception {
         exchange.setProperty(ExchangePropertyKey.CHARSET_NAME, "iso-8859-1");
 
         assertEquals("iso-8859-1", exchange.getProperty(ExchangePropertyKey.CHARSET_NAME));
@@ -252,6 +253,18 @@ public class DefaultExchangeTest extends ExchangeTestSupport {
 
         exchange.removeProperties("*");
         assertNull(exchange.getProperty(ExchangePropertyKey.CHARSET_NAME));
+    }
+
+    @Test
+    public void testAllProperties() throws Exception {
+        exchange.removeProperties("*");
+        exchange.setProperty("foo", 123);
+        exchange.setProperty(ExchangePropertyKey.TO_ENDPOINT, "seda:bar");
+        exchange.setProperty(ExchangePropertyKey.CHARSET_NAME, "iso-8859-1");
+
+        assertEquals(1, exchange.getProperties().size());
+        assertEquals(2, exchange.adapt(ExtendedExchange.class).getInternalProperties().size());
+        assertEquals(3, exchange.getAllProperties().size());
     }
 
     @Test

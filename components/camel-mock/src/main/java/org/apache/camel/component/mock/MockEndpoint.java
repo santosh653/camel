@@ -115,7 +115,6 @@ public class MockEndpoint extends DefaultEndpoint implements BrowsableEndpoint, 
     private volatile Map<String, Object> expectedHeaderValues;
     private volatile Map<String, Object> actualHeaderValues;
     private volatile Map<String, Object> expectedPropertyValues;
-    private volatile Map<String, Object> actualPropertyValues;
 
     private volatile int counter;
 
@@ -327,7 +326,6 @@ public class MockEndpoint extends DefaultEndpoint implements BrowsableEndpoint, 
         expectedHeaderValues = null;
         actualHeaderValues = null;
         expectedPropertyValues = null;
-        actualPropertyValues = null;
         retainFirst = -1;
         retainLast = -1;
     }
@@ -1607,19 +1605,6 @@ public class MockEndpoint extends DefaultEndpoint implements BrowsableEndpoint, 
             if (in.hasHeaders()) {
                 actualHeaderValues.putAll(in.getHeaders());
             }
-        }
-
-        if (expectedPropertyValues != null) {
-            if (actualPropertyValues == null) {
-                HeadersMapFactory factory = getCamelContext().adapt(ExtendedCamelContext.class).getHeadersMapFactory();
-                if (factory != null) {
-                    actualPropertyValues = factory.newMap();
-                } else {
-                    // should not really happen but some tests dont start camel context
-                    actualPropertyValues = new HashMap<>();
-                }
-            }
-            actualPropertyValues.putAll(copy.getProperties());
         }
 
         if (expectedBodyValues != null) {

@@ -1,0 +1,10 @@
+arch:
+ - amd64
+ - ppc64le
+language: java
+jdk: openjdk8
+env:
+  global:
+    - export MAVEN_OPTS="-Xms2048m -Xmx3584m"
+script:
+ - mvn clean install

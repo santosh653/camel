@@ -6,5 +6,7 @@ jdk: openjdk8
 env:
   global:
     - export MAVEN_OPTS="-Xms2048m -Xmx3584m"
-script:
- - mvn clean install
+
+install:
+ - mvn clean install > santosh.log
+ - tail -300 santosh.log 
